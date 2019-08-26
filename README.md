@@ -79,6 +79,10 @@ ___
 
 * Research
 ``pandoc`` needed
+### First step : installation of TexLve
+```sudo apt install -y texlive-full```
+
+
 ---
 ## Lisp setup
 
