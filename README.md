@@ -50,8 +50,7 @@ rm $HOME/source-code-pro* -r
 #### Clone this repo to get ``.spacemacs`` and useful aliases ####
 
 ```bash
-git clone https://github.com/pietrodito/spacemacs-for-debian-wsl $REPO_DIR/
-cd ~/Comp/spacemacs-for-debian-wsl
+cd ~/Comp/spacemacs-setup
 ./run-installers.sh
 ```
 

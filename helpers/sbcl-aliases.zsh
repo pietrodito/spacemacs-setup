@@ -1,1 +1,0 @@
-alias cll='sbcl --load'
