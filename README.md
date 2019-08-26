@@ -50,6 +50,7 @@ rm $HOME/source-code-pro* -r
 #### Clone this repo to get ``.spacemacs`` and useful aliases ####
 
 ```bash
+git clone https://github.com/pietrodito/spacemacs-setup ~/Comp/spacemacs-setup
 cd ~/Comp/spacemacs-setup
 ./run-installers.sh
 ```
