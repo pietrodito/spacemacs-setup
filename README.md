@@ -68,8 +68,7 @@ sudo apt install -y markdown
 ```
 ---
 ## LaTeX setup
-
-
+TODO
 ---
 ## Lisp setup
 ### SLIME
@@ -77,7 +76,8 @@ sudo apt install -y markdown
 sudo apt install sbcl -y
 ```
 ### Quicklisp package manager :
-See https://www.quicklisp.org/beta/
+
+ See https://www.quicklisp.org/beta/
 ---
 ## R with ESS
 ### Get latest R version from CRAN
