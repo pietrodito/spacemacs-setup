@@ -36,6 +36,11 @@ cd ~/.emacs.d
 git checkout develop
 ```
 
+#### Remove emacs default config files
+```bash
+rm ~/.config/emacs
+```
+
 #### Add source-code-pro font ####
 
 ```bash
