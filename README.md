@@ -67,7 +67,7 @@ sudo apt install -y pandoc
 sudo apt install -y markdown
 ```
 ---
-## LaTeX setup
+## LaTeX setup ##
 TODO
 ---
 ## Lisp setup
@@ -75,7 +75,7 @@ TODO
 ```bash
 sudo apt install sbcl -y
 ```
-### Quicklisp package manager :
+### Quicklisp package manager : ###
 
  See https://www.quicklisp.org/beta/
 ---
