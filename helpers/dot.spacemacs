@@ -528,7 +528,7 @@ before packages are loaded."
   (setq calendar-week-start-day 1)
 
   ;; New frame will open fullscreen
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (add-to-list 'default-frame-alist '(fullscreen . fullboth))
   (spacemacs/toggle-fullscreen-frame)
 
   ;; Simulates vim increment and decrement number
