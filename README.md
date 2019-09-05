@@ -1,5 +1,5 @@
 
-# Spacemacs on Ubuntu 19 #
+# Spacemacs on Ubuntu 18 #
 
 ## Main part ##
 
