@@ -56,6 +56,8 @@ helpers/emacs-aliases.zsh
   ;; New frame will open fullscreen
   (add-to-list 'default-frame-alist '(fullscreen . fullboth))
 ```
+### Change icon in Ubuntu ###
+* http://splendidabacus.com/posts/2015/03/spacemacs-unity-icon/
 ## Markdown Preview ##
 ### First step : installation of TexLve
 ```bash
@@ -66,19 +68,15 @@ sudo apt install -y texlive-full
 sudo apt install -y pandoc
 sudo apt install -y markdown
 ```
----
 ## LaTeX setup ##
-TODO
----
+* TODO
 ## Lisp setup
 ### SLIME
 ```bash
 sudo apt install sbcl -y
 ```
 ### Quicklisp package manager : ###
-
- See https://www.quicklisp.org/beta/
----
+* See https://www.quicklisp.org/beta/
 ## R with ESS
 ### Get latest R version from CRAN
 #### Add backport repo
