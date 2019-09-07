@@ -93,3 +93,10 @@ sudo apt update
 ```
 sudo apt install r-base
 ```
+#### Install tidyverse
+##### Deb packages needed: 
+* curl
+* openssl
+```bash
+sudo apt install -y libcurl4-openssl-dev libssl-dev 
+```
