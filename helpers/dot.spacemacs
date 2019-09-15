@@ -382,7 +382,7 @@ It should only modify the values of Spacemacs settings."
    ;;   :size-limit-kb 1000)
    ;; When used in a plist, `visual' takes precedence over `relative'.
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers 'visual
 
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
@@ -533,6 +533,15 @@ before packages are loaded."
   ;; Simulates vim increment and decrement number
   (evil-define-key 'normal global-map (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
   (evil-define-key 'normal global-map (kbd "C-x C-x") 'evil-numbers/dec-at-pt)
+
+  ;; Insert a csv file and convert it to an org table
+  (defun ulys/insert-file-as-org-table (filename)
+    "Insert a csv file into the current buffer at point, and convert it to an org table."
+    (interactive (list (ido-read-file-name "csv file: ")))
+    (let* ((start (point))
+           (end (+ start (nth 1 (insert-file-contents filename)))))
+      (org-table-convert-region start end)
+      ))
 
   ;; Get email, and store in nnml
   (setq gnus-secondary-select-methods
