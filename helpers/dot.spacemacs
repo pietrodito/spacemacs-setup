@@ -357,7 +357,7 @@ It should only modify the values of Spacemacs settings."
    ;; If non-nil unicode symbols are displayed in the mode line.
    ;; If you use Emacs as a daemon and wants unicode characters only in GUI set
    ;; the value to quoted `display-graphic-p'. (default t)
-   dotspacemacs-mode-line-unicode-symbols t
+   dotspacemacs-mode-line-unicode-symbols nil
 
    ;; If non-nil smooth scrolling (native-scrolling) is enabled. Smooth
    ;; scrolling overrides the default behavior of Emacs which recenters point
@@ -505,11 +505,6 @@ before packages are loaded."
  ;; To edit .spacemacs without to be prompted each time
   (setq vc-follow-symlinks t)
 
-  ;; Ranger configuration
-  (setq ranger-cleanup-eagerly t)
-  (setq ranger-show-hidden t)
-  (setq ranger-max-preview-size 1) 
-
   ;; ess magrittr pipe with "C-;"
   ;; ess assign with ";"
   (defun ess-insert-magrittr-pipe ()
@@ -523,6 +518,11 @@ before packages are loaded."
               (define-key ess-mode-map (kbd "C-;") 'ess-insert-magrittr-pipe)
               (define-key ess-mode-map (kbd "C-x C-j") 'ess-eval-line-invisibly-and-step)))
 
+  ;; In org mode R will be loaded and code executed without prompt
+  (custom-set-variables
+   '(org-babel-load-languages (quote ((emacs-lisp . t) (R . t))))
+   '(org-confirm-babel-evaluate nil))
+
   ;; agenda setup
   (setq calendar-week-start-day 1)
 
@@ -533,6 +533,7 @@ before packages are loaded."
   ;; Simulates vim increment and decrement number
   (evil-define-key 'normal global-map (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
   (evil-define-key 'normal global-map (kbd "C-x C-x") 'evil-numbers/dec-at-pt)
+
 
   ;; Insert a csv file and convert it to an org table
   (defun ulys/insert-file-as-org-table (filename)
