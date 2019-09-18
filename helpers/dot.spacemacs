@@ -573,6 +573,8 @@ before packages are loaded."
   (setq nnml-directory "~/gmail")
   (setq message-directory "~/gmail")
 
+  ;; Auto-refresh dired on file change
+  (add-hook 'dired-mode-hook 'auto-revert-mode)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
