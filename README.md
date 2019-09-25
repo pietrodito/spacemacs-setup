@@ -59,18 +59,23 @@ helpers/emacs-aliases.zsh
 ```
 ### Change icon in Ubuntu ###
 * http://splendidabacus.com/posts/2015/03/spacemacs-unity-icon/
-## Markdown Preview ##
+
+## LaTeX setup ##
 ### First step : installation of TexLve
 ```bash
 sudo apt install -y texlive-full
 ```
+### Needed to include .svg files :
+#### Installation of inkscape
+```bash
+sudo apt install -y inkscape
+```
+## Markdown Preview ##
 ### Then : installation of pandoc
 ```bash
 sudo apt install -y pandoc
 sudo apt install -y markdown
 ```
-## LaTeX setup ##
-* TODO
 ## Lisp setup
 ### SLIME
 ```bash
