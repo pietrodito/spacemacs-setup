@@ -386,7 +386,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
-   dotspacemacs-folding-method 'origami
+   dotspacemacs-folding-method 'evil
 
    ;; If non-nil `smartparens-strict-mode' will be enabled in programming modes.
    ;; (default nil)
@@ -512,11 +512,17 @@ before packages are loaded."
     (interactive)
     (insert " %>% "))
 
+  (defun ess-backquote-from-dollar ()
+    "Surround with backquotes form last $ till point."
+    (interactive)
+    ())
+
   (add-hook 'ess-mode-hook
             (lambda ()
               (define-key ess-mode-map (kbd ";") 'ess-insert-assign)
               (define-key ess-mode-map (kbd "C-;") 'ess-insert-magrittr-pipe)
-              (define-key ess-mode-map (kbd "C-x C-j") 'ess-eval-line-invisibly-and-step)))
+              (define-key ess-mode-map (kbd "C-x C-j") 'ess-eval-line-invisibly-and-step)
+              (define-key ess-mode-map (kbd "C-`") 'ess-backquote-from-dollar)))
 
   ;; In org mode R will be loaded and code executed without prompt
   (custom-set-variables
@@ -543,6 +549,16 @@ before packages are loaded."
            (end (+ start (nth 1 (insert-file-contents filename)))))
       (org-table-convert-region start end)
       ))
+
+  ;; org-latex-export-to-pdf : report settings to avoid to make part from first level
+  (with-eval-after-load 'ox-latex
+    (add-to-list 'org-latex-classes
+                 '("report"
+                   "\\documentclass{report}"
+                   ("\\chapter{%s}" . "\\chapter*{%s}")
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 
   ;; Get email, and store in nnml
   (setq gnus-secondary-select-methods

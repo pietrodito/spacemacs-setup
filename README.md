@@ -69,6 +69,7 @@ sudo apt install -y texlive-full
 #### Installation of inkscape
 ```bash
 sudo apt install -y inkscape
+sudo apt install libcanberra-gtk-module -y
 ```
 ## Markdown Preview ##
 ### Then : installation of pandoc
