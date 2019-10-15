@@ -550,7 +550,7 @@ before packages are loaded."
       (org-table-convert-region start end)
       ))
 
-  ;; org-latex-export-to-pdf : report settings to avoid to make part from first level
+  ;; org-latex-export-to-pdf : report settings - prevent org first level to be converted as a part 
   (with-eval-after-load 'ox-latex
     (add-to-list 'org-latex-classes
                  '("report"
