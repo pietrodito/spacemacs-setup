@@ -50,7 +50,6 @@ This function should only modify configuration layer settings."
      ;; Others
      systemd
      csv
-     polymode
 
      ;; Applications
      org
@@ -88,7 +87,12 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(
+                                      polymode
+                                      poly-R
+                                      poly-noweb
+                                      poly-markdown
+                                      )
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -231,7 +235,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Default font or prioritized list of fonts.
    dotspacemacs-default-font '("Source Code Pro"
-                               :size 16.0
+                               :size 14.0
                                :weight normal
                                :width normal)
 
