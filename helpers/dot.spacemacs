@@ -46,6 +46,8 @@ This function should only modify configuration layer settings."
      html
      latex
      markdown
+     python
+     julia
 
      ;; Others
      systemd
@@ -54,6 +56,9 @@ This function should only modify configuration layer settings."
      ;; Applications
      org
      gnus
+     lsp
+
+     ;; spell-checking
 
      ;; Project management
      git
@@ -75,7 +80,6 @@ This function should only modify configuration layer settings."
      theming
 
      ;; better-defaults
-     ;; spell-checking
      ;; syntax-checking
      ;; version-control
      )
