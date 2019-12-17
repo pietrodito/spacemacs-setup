@@ -86,12 +86,23 @@ sudo apt install sbcl -y
 * See https://www.quicklisp.org/beta/
 ## R with ESS
 ### Get latest R version from CRAN
-#### Add backport repo
+#### Add backport repo (UBUNTU 18.04)
 ``` bash
-# Add GPG sig
+# Add GPG sig for ubuntu
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
 # Add repo to sources.list
 echo "deb https://cloud.r-project.org//bin/linux/ubuntu bionic-cran35/" | sudo tee -a /etc/apt/sources.list
+# Update
+sudo apt update
+```
+
+#### Add backport repo (DEBIAN 10)
+``` bash
+# Add GPG sig for debian
+sudo apt-key adv --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'
+# Add repo to sources.list
+echo "deb https://cloud.r-project.org//bin/linux/debian buster-cran35/" | sudo tee -a /etc/apt/sources.list
+
 # Update
 sudo apt update
 ```
