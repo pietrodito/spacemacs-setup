@@ -56,7 +56,7 @@ This function should only modify configuration layer settings."
      ;; Applications
      org
      gnus
-     lsp
+     ;; lsp
 
      ;; spell-checking
 
