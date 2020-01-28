@@ -56,6 +56,7 @@ This function should only modify configuration layer settings."
      ;; Applications
      org
      gnus
+     fasd
      ;; lsp
 
      ;; spell-checking
@@ -517,9 +518,14 @@ before packages are loaded."
   ;; ess magrittr pipe with "C-;"
   ;; ess assign with ";"
   (defun ess-insert-magrittr-pipe ()
-    "Insert magrittr pipe at i.e. \"%>%\" at the end of the line."
+    "Insert magrittr pipe at i.e. \"%>%\"."
     (interactive)
-    (insert " %>% "))
+    (insert "\n  %>% "))
+
+  (defun ess-insert-right-assign-operator ()
+    "Insert  \"->\"."
+    (interactive)
+    (insert " -> "))
 
   (defun ess-backquote-from-dollar ()
     "Surround with backquotes form last $ till point."
@@ -530,7 +536,10 @@ before packages are loaded."
             (lambda ()
               (define-key ess-mode-map (kbd ";") 'ess-insert-assign)
               (define-key ess-mode-map (kbd "C-;") 'ess-insert-magrittr-pipe)
-              (define-key ess-mode-map (kbd "C-x C-j") 'ess-eval-line-invisibly-and-step)
+              (define-key ess-mode-map (kbd "C-:")
+              'ess-insert-right-assign-operator)
+              (define-key ess-mode-map (kbd "C-x C-j")
+              'ess-eval-line-invisibly-and-step)
               (define-key ess-mode-map (kbd "C-`") 'ess-backquote-from-dollar)))
 
   ;; In org mode R will be loaded and code executed without prompt
@@ -541,6 +550,9 @@ before packages are loaded."
   ;; agenda setup
   (setq calendar-week-start-day 1)
 
+  ;; add time in powerline
+  (display-time-mode 1)
+
   ;; New frame will open fullscreen
   (add-to-list 'default-frame-alist '(fullscreen . fullboth))
   (spacemacs/toggle-fullscreen-frame)
@@ -548,6 +560,10 @@ before packages are loaded."
   ;; Simulates vim increment and decrement number
   (evil-define-key 'normal global-map (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
   (evil-define-key 'normal global-map (kbd "C-x C-x") 'evil-numbers/dec-at-pt)
+
+  
+  ;; F5 to execute lnh <=> ln -s `pwd` ~/0_Quick-Link/
+  (global-set-key (kbd "<f5>") (lambda () (interactive) (shell-command "lnh")))
 
 
   ;; Insert a csv file and convert it to an org table
@@ -600,7 +616,7 @@ before packages are loaded."
 
   ;; Auto-refresh dired on file change
   (add-hook 'dired-mode-hook 'auto-revert-mode)
-  )
+)
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -615,6 +631,7 @@ This function is called at the very end of Spacemacs initialization."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(evil-want-Y-yank-to-eol nil)
+ '(evil-want-fine-undo t)
  '(org-agenda-files '("~/Comp/R/ess-tests.org" "~/Comp/Org/draft.org"))
  '(org-babel-load-languages '((emacs-lisp . t) (R . t)))
  '(org-confirm-babel-evaluate nil)
