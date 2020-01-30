@@ -79,13 +79,15 @@ This function should only modify configuration layer settings."
                       auto-completion-enable-help-tooltip t
                       auto-completion-enable-sort-by-usage t
                       )
+
+     syntax-checking
      multiple-cursors
+     ;; spacemacs-purpose
 
      ;; -------
      theming
 
      ;; better-defaults
-     ;; syntax-checking
      ;; version-control
      )
 
@@ -101,6 +103,7 @@ This function should only modify configuration layer settings."
                                       poly-R
                                       poly-noweb
                                       poly-markdown
+                                      evil-smartparens
                                       )
 
    ;; A list of packages that cannot be updated.
@@ -310,7 +313,7 @@ It should only modify the values of Spacemacs settings."
    ;; If non-nil, the paste transient-state is enabled. While enabled, after you
    ;; paste something, pressing `C-j' and `C-k' several times cycles through the
    ;; elements in the `kill-ring'. (default nil)
-   dotspacemacs-enable-paste-transient-state nil
+   dotspacemacs-enable-paste-transient-state t
 
    ;; Which-key delay in seconds. The which-key buffer is the popup listing
    ;; the commands bound to the current keystroke sequence. (default 0.4)
@@ -404,7 +407,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil `smartparens-strict-mode' will be enabled in programming modes.
    ;; (default nil)
-   dotspacemacs-smartparens-strict-mode nil
+   dotspacemacs-smartparens-strict-mode t
 
    ;; If non-nil pressing the closing parenthesis `)' key in insert mode passes
    ;; over any automatically added closing parenthesis, bracket, quote, etc...
@@ -418,8 +421,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil, start an Emacs server if one is not already running.
    ;; (default nil)
-   dotspacemacs-enable-server nil
-
+   dotspacemacs-enable-server t
    ;; Set the emacs server socket location.
    ;; If nil, uses whatever the Emacs default is, otherwise a directory path
    ;; like \"~/.emacs.d/server\". It has no effect if
@@ -464,7 +466,7 @@ It should only modify the values of Spacemacs settings."
    ;; `trailing' to delete only the whitespace at end of lines, `changed' to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
-   dotspacemacs-whitespace-cleanup nil
+   dotspacemacs-whitespace-cleanup 'all
 
    ;; Either nil or a number of seconds. If non-nil zone out after the specified
    ;; number of seconds. (default nil)
@@ -489,18 +491,6 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
-  ;; Modify main theme
-  ;; (setq theming-modifications '((spacemacs-dark
-  ;;                                (default
-  ;;                                  :background "#000000"
-  ;;                                  :foreground "#ffffff"
-  ;;                                  :box nil
-  ;;                                  :underline nil)
-  ;;                                (font-lock-comment-face
-  ;;                                 :background "#000000"
-  ;;                                 :foreground "#ffffff"
-  ;;                                 )
-  ;;                                )))
   )
 
 (defun dotspacemacs/user-load ()
@@ -516,25 +506,13 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+
+  (module/misc/smartparens)
+
+  (setq undo-tree-auto-save-history t)
+
  ;; To edit .spacemacs without to be prompted each time
   (setq vc-follow-symlinks t)
-
-  ;; ess magrittr pipe with "C-;"
-  ;; ess assign with ";"
-  (defun ess-insert-magrittr-pipe ()
-    "Insert magrittr pipe at i.e. \"%>%\"."
-    (interactive)
-    (insert "\n  %>% "))
-
-  (defun ess-insert-right-assign-operator ()
-    "Insert  \"->\"."
-    (interactive)
-    (insert " -> "))
-
-  (defun ess-backquote-from-dollar ()
-    "Surround with backquotes form last $ till point."
-    (interactive)
-    ())
 
   (add-hook 'ess-mode-hook
             (lambda ()
@@ -571,21 +549,13 @@ before packages are loaded."
   (evil-define-key 'normal global-map (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
   (evil-define-key 'normal global-map (kbd "C-x C-x") 'evil-numbers/dec-at-pt)
 
-  
+
   ;; F5 to execute lnh <=> ln -s `pwd` ~/0_Quick-Link/
   (global-set-key (kbd "<f5>") (lambda () (interactive) (shell-command "lnh")))
 
 
-  ;; Insert a csv file and convert it to an org table
-  (defun ulys/insert-file-as-org-table (filename)
-    "Insert a csv file into the current buffer at point, and convert it to an org table."
-    (interactive (list (ido-read-file-name "csv file: ")))
-    (let* ((start (point))
-           (end (+ start (nth 1 (insert-file-contents filename)))))
-      (org-table-convert-region start end)
-      ))
 
-  ;; org-latex-export-to-pdf : report settings - prevent org first level to be converted as a part 
+  ;; org-latex-export-to-pdf : report settings - prevent org first level to be converted as a part
   (with-eval-after-load 'ox-latex
     (add-to-list 'org-latex-classes
                  '("report"
@@ -627,6 +597,56 @@ before packages are loaded."
   ;; Auto-refresh dired on file change
   (add-hook 'dired-mode-hook 'auto-revert-mode)
 )
+
+;;;; Yasnippet
+(defun module/misc/yasnippet ()
+  "Yassnippet bindings and config."
+  (use-package yasnippet-snippet
+    :defer t
+    :config
+    (push 'yas-installed-snippets-dir yas-snippet-dirs)
+    )
+  )
+
+;; Insert a csv file and convert it to an org table
+(defun ulys/insert-file-as-org-table (filename)
+  "Insert a csv file into the current buffer at point, and convert it to an org table."
+  (interactive (list (ido-read-file-name "csv file: ")))
+  (let* ((start (point))
+         (end (+ start (nth 1 (insert-file-contents filename)))))
+    (org-table-convert-region start end)
+    ))
+
+;;;; Smart Parentheses
+(defun module/misc/smartparens ()
+  (use-package smartparens
+    :defer t
+    :diminish ""
+    :bind (("C-)" . sp-forward-slurp-sexp)
+           ("C-}" . sp-forward-barf-sexp)
+           ("C-(" . sp-splice-sexp))
+    :config
+    (progn
+      (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
+      (push 'yas-installed-snippets-dir yas-snippet-dirs))
+    ))
+
+;; ess magrittr pipe with "C-;"
+;; ess assign with ";"
+(defun ess-insert-magrittr-pipe ()
+  "Insert magrittr pipe at i.e. \"%>%\"."
+  (interactive)
+  (insert "\n  %>% "))
+
+(defun ess-insert-right-assign-operator ()
+  "Insert  \"->\"."
+  (interactive)
+  (insert " -> "))
+
+(defun ess-backquote-from-dollar ()
+  "Surround with backquotes form last $ till point."
+  (interactive)
+  ())
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
