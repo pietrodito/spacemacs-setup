@@ -507,6 +507,8 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
+  (setq paradox-github-token "f3b34c73d58490f6a8dae190a8e3797b6546dd4a")
+
   (module/misc/smartparens)
 
   (setq undo-tree-auto-save-history t)
@@ -584,7 +586,7 @@ before packages are loaded."
         gnus-message-archive-group "[Gmail]/Sent Mail")
 
   ;; set return email address based on incoming email address
-  (setq gnus-posting-styles
+  (setq gnus-posting-stylesg-styles
         '(((header "to" "address@outlook.com")
            (address "address@outlook.com"))
           ((header "to" "address@gmail.com")
@@ -597,16 +599,6 @@ before packages are loaded."
   ;; Auto-refresh dired on file change
   (add-hook 'dired-mode-hook 'auto-revert-mode)
 )
-
-;;;; Yasnippet
-(defun module/misc/yasnippet ()
-  "Yassnippet bindings and config."
-  (use-package yasnippet-snippet
-    :defer t
-    :config
-    (push 'yas-installed-snippets-dir yas-snippet-dirs)
-    )
-  )
 
 ;; Insert a csv file and convert it to an org table
 (defun ulys/insert-file-as-org-table (filename)
