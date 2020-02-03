@@ -33,12 +33,14 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(sql
+   '(
+
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
      ;; `M-m f e R' (Emacs style) to install them.
      ;; ----------------------------------------------------------------
+
 
      ;; -------- Languages
      ess
@@ -48,6 +50,8 @@ This function should only modify configuration layer settings."
      markdown
      python
      julia
+     javascript
+     sql
 
      ;; Others
      systemd
@@ -81,7 +85,7 @@ This function should only modify configuration layer settings."
                       )
 
      syntax-checking
-     multiple-cursors
+     ;; multiple-cursors
      ;; spacemacs-purpose
 
      ;; -------
@@ -507,56 +511,65 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
+  (ulys/conf/kbd)
+
   (setq paradox-github-token "f3b34c73d58490f6a8dae190a8e3797b6546dd4a")
 
-  (module/misc/smartparens)
+
+  (ulys/config/org)
 
   (setq undo-tree-auto-save-history t)
 
  ;; To edit .spacemacs without to be prompted each time
   (setq vc-follow-symlinks t)
 
-  (add-hook 'ess-mode-hook
-            (lambda ()
-              (define-key ess-mode-map (kbd ";") 'ess-insert-assign)
-              (define-key ess-mode-map (kbd "C-;") 'ess-insert-magrittr-pipe)
-              (define-key ess-mode-map (kbd "C-:")
-              'ess-insert-right-assign-operator)
-              (define-key ess-mode-map (kbd "C-x C-j")
-              'ess-eval-line-invisibly-and-step)
-              (define-key ess-mode-map (kbd "C-`") 'ess-backquote-from-dollar)))
+  (ulys/config/ess)
 
-  ;; In org mode R will be loaded and code executed without prompt
-  (custom-set-variables
-   '(org-babel-load-languages (quote ((emacs-lisp . t)
-                                      (R          . t)
-                                      (latex      . t)
-                                      (shell      . t))))
-   '(org-confirm-babel-evaluate nil))
+  (ulys/conf/appearance)
 
-  ;; In org mode : auto complete #+begin #+end
-  (require 'org-tempo)
 
-  ;; agenda setup
-  (setq calendar-week-start-day 1)
+  (ulys/conf/latex)
 
+  (ulys/conf/mail)
+  )
+
+;; Appearance config (time, fullscreen...)
+(defun ulys/conf/appearance ()
   ;; add time in powerline
   (display-time-mode 1)
 
   ;; New frame will open fullscreen
   (add-to-list 'default-frame-alist '(fullscreen . fullboth))
   (spacemacs/toggle-fullscreen-frame)
+  )
+
+;; Keyboard config
+(defun ulys/conf/kbd ()
+
+  (ulys/config/smartparens)
 
   ;; Simulates vim increment and decrement number
   (evil-define-key 'normal global-map (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
   (evil-define-key 'normal global-map (kbd "C-x C-x") 'evil-numbers/dec-at-pt)
 
-
   ;; F5 to execute lnh <=> ln -s `pwd` ~/0_Quick-Link/
   (global-set-key (kbd "<f5>") (lambda () (interactive) (shell-command "lnh")))
+  )
+(defun ulys/config/smartparens ()
+  (use-package smartparens
+    :defer t
+    :diminish ""
+    :bind (("C-)" . sp-forward-slurp-sexp)
+           ("C-}" . sp-forward-barf-sexp)
+           ("C-(" . sp-splice-sexp))
+    :config
+    (progn
+      (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
+      (push 'yas-installed-snippets-dir yas-snippet-dirs))
+    ))
 
-
-
+;; Latex config
+(defun ulys/conf/latex ()
   ;; org-latex-export-to-pdf : report settings - prevent org first level to be converted as a part
   (with-eval-after-load 'ox-latex
     (add-to-list 'org-latex-classes
@@ -566,8 +579,12 @@ before packages are loaded."
                    ("\\section{%s}" . "\\section*{%s}")
                    ("\\subsection{%s}" . "\\subsection*{%s}")
                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
+  )
 
-  ;; Get email, and store in nnml
+;; Mail setup
+;; TODO Try harder to make this work see http://cachestocaches.com/series/emacs-productivity/
+(defun ulys/conf/mail ()
+    ;; Get email, and store in nnml
   (setq gnus-secondary-select-methods
         '(
           (nnimap "gmail"
@@ -598,47 +615,70 @@ before packages are loaded."
 
   ;; Auto-refresh dired on file change
   (add-hook 'dired-mode-hook 'auto-revert-mode)
-)
 
-;; Insert a csv file and convert it to an org table
-(defun ulys/insert-file-as-org-table (filename)
-  "Insert a csv file into the current buffer at point, and convert it to an org table."
-  (interactive (list (ido-read-file-name "csv file: ")))
-  (let* ((start (point))
-         (end (+ start (nth 1 (insert-file-contents filename)))))
-    (org-table-convert-region start end)
-    ))
+  )
 
-;;;; Smart Parentheses
-(defun module/misc/smartparens ()
-  (use-package smartparens
-    :defer t
-    :diminish ""
-    :bind (("C-)" . sp-forward-slurp-sexp)
-           ("C-}" . sp-forward-barf-sexp)
-           ("C-(" . sp-splice-sexp))
-    :config
-    (progn
-      (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
-      (push 'yas-installed-snippets-dir yas-snippet-dirs))
-    ))
-
-;; ess magrittr pipe with "C-;"
-;; ess assign with ";"
+;; ESS config
+(defun ulys/config/ess ()
+  (add-hook 'ess-mode-hook
+            (lambda ()
+              (define-key ess-mode-map (kbd ";") 'ess-insert-assign)
+              (define-key ess-mode-map (kbd "C-;") 'ess-insert-magrittr-pipe)
+              (define-key ess-mode-map (kbd "C-:")
+                'ess-insert-right-assign-operator)
+              (define-key ess-mode-map (kbd "C-x C-j")
+                'ess-eval-line-invisibly-and-step)
+              (define-key ess-mode-map (kbd "C-`") 'ess-backquote-from-dollar))) )
 (defun ess-insert-magrittr-pipe ()
   "Insert magrittr pipe at i.e. \"%>%\"."
   (interactive)
   (insert "\n  %>% "))
-
 (defun ess-insert-right-assign-operator ()
   "Insert  \"->\"."
   (interactive)
   (insert " -> "))
-
-(defun ess-backquote-from-dollar ()
+(defun ess-backquote-from-dollar () ;; TODO
   "Surround with backquotes form last $ till point."
   (interactive)
   ())
+
+;; Org config
+(defun ulys/config/org ()
+  (defun ulys/insert-file-as-org-table (filename)
+    "Insert a csv file into the current buffer at point, and convert it to an org table."
+    (interactive (list (ido-read-file-name "csv file: ")))
+    (let* ((start (point))
+           (end (+ start (nth 1 (insert-file-contents filename)))))
+      (org-table-convert-region start end)
+      ))
+  (ulys/config/org-capture)
+
+  ;; agenda setup
+  (setq calendar-week-start-day 1)
+
+  ;; In org mode R will be loaded and code executed without prompt
+  (custom-set-variables
+   '(org-babel-load-languages (quote ((emacs-lisp . t)
+                                      (R          . t)
+                                      (latex      . t)
+                                      (shell      . t))))
+   '(org-confirm-babel-evaluate nil))
+
+  ;; In org mode : auto complete #+begin #+end
+  (require 'org-tempo)
+  )
+(defun ulys/config/org-capture ()
+  (setq org-default-notes-file "~/Nextcloud/org/tasks.org" )
+  (setq org-capture-templates
+        '(("t" "Thesis-related Task" entry
+            (file "~/Nextcloud/org/thesis.org")
+            "** TODO %?" :empty-lines 1)
+          ("u" "Teaching-related Task" entry
+           (file "~/Nextcloud/org/teaching.org")
+           "** TODO %?" :empty-lines 1)
+          ("h" "Hospital-related Task" entry
+           (file "~/Nextcloud/org/hospital.org")
+           "** TODO %?" :empty-lines 1))))
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -658,7 +698,7 @@ This function is called at the very end of Spacemacs initialization."
  '(org-babel-load-languages '((emacs-lisp . t) (R . t)))
  '(org-confirm-babel-evaluate nil)
  '(package-selected-packages
-   '(sqlup-mode sql-indent xterm-color ws-butler winum which-key web-mode volatile-highlights vi-tilde-fringe uuidgen use-package toc-org tagedit systemd spaceline powerline smeargle slim-mode shell-pop scss-mode sass-mode restart-emacs ranger rainbow-delimiters pug-mode popwin persp-mode pcre2el paradox spinner orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-bullets open-junk-file neotree multi-term move-text mmm-mode markdown-toc markdown-mode magit-gitflow magit-popup macrostep lorem-ipsum linum-relative link-hint indent-guide hydra lv hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit magit transient git-commit with-editor evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu ess-smart-equals ess-R-data-view ctable ess julia-mode eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump f s diminish define-word csv-mode company-web web-completion-data dash company-statistics company-auctex company column-enforce-mode clean-aindent-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol auto-compile packed auctex-latexmk auctex aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup)))
+   '(tern nodejs-repl livid-mode skewer-mode js2-refactor multiple-cursors js2-mode js-doc import-js grizzl helm-gtags ggtags dap-mode lsp-treemacs bui counsel-gtags counsel swiper ivy add-node-modules-path xterm-color ws-butler winum which-key web-mode volatile-highlights vi-tilde-fringe uuidgen use-package toc-org tagedit systemd spaceline powerline smeargle slim-mode shell-pop scss-mode sass-mode restart-emacs ranger rainbow-delimiters pug-mode popwin persp-mode pcre2el paradox spinner orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-bullets open-junk-file neotree multi-term move-text mmm-mode markdown-toc markdown-mode magit-gitflow magit-popup macrostep lorem-ipsum linum-relative link-hint indent-guide hydra lv hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit magit transient git-commit with-editor evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu ess-smart-equals ess-R-data-view ctable ess julia-mode eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump f s diminish define-word csv-mode company-web web-completion-data dash company-statistics company-auctex company column-enforce-mode clean-aindent-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol auto-compile packed auctex-latexmk auctex aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
