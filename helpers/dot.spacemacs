@@ -34,7 +34,6 @@ This function should only modify configuration layer settings."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
-
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
@@ -52,6 +51,7 @@ This function should only modify configuration layer settings."
      julia
      javascript
      sql
+     go
 
      ;; Others
      systemd
@@ -549,12 +549,15 @@ before packages are loaded."
   (ulys/config/smartparens)
 
   ;; Simulates vim increment and decrement number
-  (evil-define-key 'normal global-map (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
-  (evil-define-key 'normal global-map (kbd "C-x C-x") 'evil-numbers/dec-at-pt)
+  (define-key evil-normal-state-map  (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
+  (define-key evil-normal-state-map  (kbd "C-x C-x") 'evil-numbers/dec-at-pt)
 
   ;; F5 to execute lnh <=> ln -s `pwd` ~/0_Quick-Link/
   (global-set-key (kbd "<f5>") (lambda () (interactive) (shell-command "lnh")))
-  )
+
+  (define-key evil-visual-state-map (kbd "M-v") 'ulys/region-to-process)
+  (global-set-key (kbd "<f3>") 'ulys/current-line-to-process)
+  (global-set-key (kbd "<f4>") 'ulys/open-shell))
 (defun ulys/config/smartparens ()
   (use-package smartparens
     :defer t
@@ -565,8 +568,50 @@ before packages are loaded."
     :config
     (progn
       (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
-      (push 'yas-installed-snippets-dir yas-snippet-dirs))
-    ))
+      (push 'yas-installed-snippets-dir yas-snippet-dirs))))
+(defun ulys/region-to-process (arg beg end)
+  "Send the current region to a process buffer.
+The first time it's called, will prompt for the buffer to send
+to. Subsequent calls send to the same buffer, unless a prefix
+argument is used (C-u), or the buffer no longer has an active
+process."
+  (interactive "P\nr")
+  (if (or arg ;; user asks for selection
+          (not (boundp 'region-to-process-target)) ;; target not set
+          ;; or target is not set to an active process:
+          (not (process-live-p (get-buffer-process
+                                region-to-process-target))))
+      (setq region-to-process-target
+            (completing-read
+             "Process: "
+             (seq-map (lambda (el) (buffer-name (process-buffer el)))
+                      (process-list)))))
+  (process-send-string region-to-process-target (concat (buffer-substring-no-properties beg end) "\n"))
+  (evil-normal-state 1))
+(defun ulys/current-line-to-process (arg)
+  "Send the current line to a process buffer.
+The first time it's called, will prompt for the buffer to send
+to. Subsequent calls send to the same buffer, unless a prefix
+argument is used (C-u), or the buffer no longer has an active
+process."
+  (interactive "P")
+  (if (or arg ;; user asks for selection
+          (not (boundp 'region-to-process-target)) ;; target not set
+          ;; or target is not set to an active process:
+          (not (process-live-p (get-buffer-process
+                                region-to-process-target))))
+      (setq region-to-process-target
+            (completing-read
+             "Process: "
+             (seq-map (lambda (el) (buffer-name (process-buffer el)))
+                      (process-list)))))
+  (process-send-string region-to-process-target (thing-at-point 'line))
+  (evil-next-line))
+(defun ulys/open-shell ()
+  (interactive)
+  (spacemacs/default-pop-shell)
+  (message "Thou hast seen!")
+  (other-window -1))
 
 ;; Latex config
 (defun ulys/conf/latex ()
@@ -661,7 +706,10 @@ before packages are loaded."
    '(org-babel-load-languages (quote ((emacs-lisp . t)
                                       (R          . t)
                                       (latex      . t)
-                                      (shell      . t))))
+                                      (shell      . t)
+                                      (sql        . t))))
+
+
    '(org-confirm-babel-evaluate nil))
 
   ;; In org mode : auto complete #+begin #+end
@@ -679,6 +727,7 @@ before packages are loaded."
           ("h" "Hospital-related Task" entry
            (file "~/Nextcloud/org/hospital.org")
            "** TODO %?" :empty-lines 1))))
+
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
