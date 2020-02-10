@@ -576,6 +576,7 @@ to. Subsequent calls send to the same buffer, unless a prefix
 argument is used (C-u), or the buffer no longer has an active
 process."
   (interactive "P\nr")
+  (unless (evil-visual-state-p) (error "Not in visual mode..."))
   (if (or arg ;; user asks for selection
           (not (boundp 'region-to-process-target)) ;; target not set
           ;; or target is not set to an active process:
@@ -587,7 +588,7 @@ process."
              (seq-map (lambda (el) (buffer-name (process-buffer el)))
                       (process-list)))))
   (process-send-string region-to-process-target (concat (buffer-substring-no-properties beg end) "\n"))
-  (evil-normal-state 1))
+  (evil-exit-visual-state))
 (defun ulys/current-line-to-process (arg)
   "Send the current line to a process buffer.
 The first time it's called, will prompt for the buffer to send
@@ -605,12 +606,17 @@ process."
              "Process: "
              (seq-map (lambda (el) (buffer-name (process-buffer el)))
                       (process-list)))))
-  (process-send-string region-to-process-target (thing-at-point 'line))
+  ;; Need to check if current line is ended with newline
+  (setq line-at-point (thing-at-point 'line))
+  (setq string-to-send
+        (if (string-suffix-p "\n" line-at-point)
+            line-at-point
+            (concat line-at-point "\n")))
+  (process-send-string region-to-process-target string-to-send)
   (evil-next-line))
 (defun ulys/open-shell ()
   (interactive)
   (spacemacs/default-pop-shell)
-  (message "Thou hast seen!")
   (other-window -1))
 
 ;; Latex config
