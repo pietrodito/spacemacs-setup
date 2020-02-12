@@ -61,7 +61,6 @@ This function should only modify configuration layer settings."
      org
      gnus
      fasd
-     ;; lsp
 
      (spell-checking :variables spell-checking-enable-by-default nil)
 
@@ -72,6 +71,7 @@ This function should only modify configuration layer settings."
                treemacs-use-filewatch-mode t)
 
      ;; ------- Tools
+     pdf
      helm
      (shell :variables
             shell-default-term-shell "/bin/zsh"
@@ -108,7 +108,7 @@ This function should only modify configuration layer settings."
                                       poly-noweb
                                       poly-markdown
                                       evil-smartparens
-                                      )
+                                      org-noter)
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -251,7 +251,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Default font or prioritized list of fonts.
    dotspacemacs-default-font '("Source Code Pro"
-                               :size 12.0
+                               :size 14.0
                                :weight normal
                                :width normal)
 
@@ -511,27 +511,32 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
-  (ulys/conf/kbd)
-
-  (setq paradox-github-token "f3b34c73d58490f6a8dae190a8e3797b6546dd4a")
-
-
-  (ulys/config/org)
-
   (setq undo-tree-auto-save-history t)
-
- ;; To edit .spacemacs without to be prompted each time
-  (setq vc-follow-symlinks t)
-
+  (setq vc-follow-symlinks t) ;; To edit .spacemacs without to be prompted each time
+  (setq paradox-github-token "f3b34c73d58490f6a8dae190a8e3797b6546dd4a")
+  (ulys/conf/kbd)
+  (ulys/config/org)
   (ulys/config/ess)
-
   (ulys/conf/appearance)
-
-
   (ulys/conf/latex)
-
   (ulys/conf/mail)
-  )
+  (ulys/conf/org-noter))
+
+
+;; org-noter config
+(defun ulys/conf/org-noter ()
+  (use-package org-noter
+    :config
+    (setq org-noter-always-create-frame nil
+          org-noter-insert-note-no-questions t
+          org-noter-separate-notes-from-heading t
+          org-noter-auto-save-last-location t)
+
+    (defun org-noter-init-pdf-view ()
+      (pdf-view-fit-page-to-window)
+      (pdf-view-auto-slice-minor-mode)
+      (run-at-time "0.5 sec" nil #'org-noter))
+    (add-hook 'pdf-view-mode-hook 'org-noter-init-pdf-view)))
 
 ;; Appearance config (time, fullscreen...)
 (defun ulys/conf/appearance ()
@@ -607,22 +612,22 @@ process."
              (seq-map (lambda (el) (buffer-name (process-buffer el)))
                       (process-list)))))
   ;; Need to check if current line is ended with newline
-  (setq line-at-point (thing-at-point 'line))
-  (setq string-to-send
-        (if (string-suffix-p "\n" line-at-point)
-            line-at-point
-            (concat line-at-point "\n")))
-  (process-send-string region-to-process-target string-to-send)
-  (evil-next-line))
-(defun ulys/open-shell ()
-  (interactive)
-  (spacemacs/default-pop-shell)
-  (other-window -1))
+    (setq line-at-point (thing-at-point 'line))
+    (setq string-to-send
+          (if (string-suffix-p "\n" line-at-point)
+              line-at-point
+              (concat line-at-point "\n")))
+    (process-send-string region-to-process-target string-to-send)
+    (evil-next-line))
+  (defun ulys/open-shell ()
+    (interactive)
+    (spacemacs/default-pop-shell)
+    (other-window -1))
 
-;; Latex config
-(defun ulys/conf/latex ()
-  ;; org-latex-export-to-pdf : report settings - prevent org first level to be converted as a part
-  (with-eval-after-load 'ox-latex
+  ;; Latex config
+  (defun ulys/conf/latex ()
+    ;; org-latex-export-to-pdf : report settings - prevent org first level to be converted as a part
+    (with-eval-after-load 'ox-latex
     (add-to-list 'org-latex-classes
                  '("report"
                    "\\documentclass{report}"
@@ -713,6 +718,7 @@ process."
                                       (R          . t)
                                       (latex      . t)
                                       (shell      . t)
+                                      (python     . t)
                                       (sql        . t))))
 
 
