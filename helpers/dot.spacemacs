@@ -520,8 +520,28 @@ before packages are loaded."
   (ulys/conf/appearance)
   (ulys/conf/latex)
   (ulys/conf/mail)
+  (ulys/conf/dired)
+  (ulys/conf/eaf)
   (ulys/conf/org-noter))
 
+;; EAF config
+(defun ulys/conf/eaf ()
+  (use-package eaf
+    :load-path "~/Comp/emacs-application-framework"
+    :custom
+    (eaf-find-alternate-file-in-dired t)
+    :config
+    (eaf-bind-key scroll_up "RET" eaf-pdf-viewer-keybinding)
+    (eaf-bind-key scroll_down_page "DEL" eaf-pdf-viewer-keybinding)
+    (eaf-bind-key scroll_up "C-n" eaf-pdf-viewer-keybinding)
+    (eaf-bind-key scroll_down "C-p" eaf-pdf-viewer-keybinding)
+    (eaf-bind-key take_photo "p" eaf-camera-keybinding)))
+
+
+;; dired config (hide .~undo-tree~ files)
+(defun ulys/conf/dired ()
+  (setq dired-omit-verbose nil)
+  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode))))
 
 ;; org-noter config
 (defun ulys/conf/org-noter ()
@@ -619,13 +639,13 @@ process."
               (concat line-at-point "\n")))
     (process-send-string region-to-process-target string-to-send)
     (evil-next-line))
-  (defun ulys/open-shell ()
+(defun ulys/open-shell ()
     (interactive)
     (spacemacs/default-pop-shell)
     (other-window -1))
 
-  ;; Latex config
-  (defun ulys/conf/latex ()
+;; Latex config
+(defun ulys/conf/latex ()
     ;; org-latex-export-to-pdf : report settings - prevent org first level to be converted as a part
     (with-eval-after-load 'ox-latex
     (add-to-list 'org-latex-classes
@@ -700,33 +720,17 @@ process."
 
 ;; Org config
 (defun ulys/config/org ()
-  (defun ulys/insert-file-as-org-table (filename)
-    "Insert a csv file into the current buffer at point, and convert it to an org table."
-    (interactive (list (ido-read-file-name "csv file: ")))
-    (let* ((start (point))
-           (end (+ start (nth 1 (insert-file-contents filename)))))
-      (org-table-convert-region start end)
-      ))
+  (ulys/config/org-tempo)
+  (ulys/config/org-babel)
+  (ulys/config/org-calendar)
   (ulys/config/org-capture)
-
-  ;; agenda setup
-  (setq calendar-week-start-day 1)
-
-  ;; In org mode R will be loaded and code executed without prompt
-  (custom-set-variables
-   '(org-babel-load-languages (quote ((emacs-lisp . t)
-                                      (R          . t)
-                                      (latex      . t)
-                                      (shell      . t)
-                                      (python     . t)
-                                      (sql        . t))))
-
-
-   '(org-confirm-babel-evaluate nil))
-
-  ;; In org mode : auto complete #+begin #+end
-  (require 'org-tempo)
-  )
+  (ulys/config/org-file-apps))
+(defun ulys/org-insert-csv-as-table (filename)
+  "Insert a csv file into the current buffer at point, and convert it to an org table."
+  (interactive (list (ido-read-file-name "csv file: ")))
+  (let* ((start (point))
+         (end (+ start (nth 1 (insert-file-contents filename)))))
+    (org-table-convert-region start end)))
 (defun ulys/config/org-capture ()
   (setq org-default-notes-file "~/Nextcloud/org/tasks.org" )
   (setq org-capture-templates
@@ -739,6 +743,37 @@ process."
           ("h" "Hospital-related Task" entry
            (file "~/Nextcloud/org/hospital.org")
            "** TODO %?" :empty-lines 1))))
+(defun ulys/config/org-file-apps ()
+  (defun ulys/org-pdf-app (file-path link-without-schema)
+    "Open pdf file using pdf-tools and go to the specified page."
+    (let* ((page (if (not (string-match "\\.pdf::\\([0-9]+\\)\\'"
+                                        link-without-schema))
+                     1
+                   (string-to-number (match-string 1 link-without-schema)))))
+      (find-file-other-window file-path)
+      (pdf-view-goto-page page)))
+  (setq org-file-apps
+        '((auto-mode . emacs)
+          ("\\.x?html?\\'" . "firefox %s")
+          ("\\.pdf\\(::[0-9]+\\)?\\'" . whatacold/org-pdf-app)
+          ("\\.gif\\'" . "eog \"%s\"")
+          ("\\.mp4\\'" . "vlc \"%s\"")
+          ("\\.mkv" . "vlc \"%s\""))))
+(defun ulys/config/org-calendar ()
+  (setq calendar-week-start-day 1))
+(defun ulys/config/org-babel ()
+  ;; In org mode R will be loaded and code executed without prompt
+  (custom-set-variables
+   '(org-babel-load-languages (quote ((emacs-lisp . t)
+                                      (R          . t)
+                                      (latex      . t)
+                                      (shell      . t)
+                                      (python     . t)
+                                      (sql        . t))))
+   '(org-confirm-babel-evaluate nil)))
+(defun ulys/config/org-tempo ()
+  ;; In org mode : auto complete #+begin #+end
+  (require 'org-tempo))
 
 
 ;; Do not write anything past this comment. This is where Emacs will
