@@ -1,2 +1,2 @@
-. ./installers/source-to-set-repo-dir-var.sh
-ln -sf $REPO_DIR/helpers/dot.spacemacs ~/.spacemacs
+source ./installers/source-to-set-repo-dir-var.sh
+ln --symbolic --force  $REPO_DIR/helpers/dot.spacemacs ~/.spacemacs

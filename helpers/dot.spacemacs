@@ -85,14 +85,11 @@ This function should only modify configuration layer settings."
                       )
 
      syntax-checking
-     ;; multiple-cursors
      ;; spacemacs-purpose
 
      ;; -------
      theming
 
-     ;; better-defaults
-     ;; version-control
      )
 
    ;; List of additional packages that will be installed without being
@@ -347,7 +344,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
    ;; Use to disable fullscreen animations in OSX. (default nil)
-   dotspacemacs-fullscreen-use-non-native nil
+   dotspacemacs-fullscreen-use-non-native t
 
    ;; If non-nil the frame is maximized when Emacs starts up.
    ;; Takes effect only if `dotspacemacs-fullscreen-at-startup' is nil.
@@ -378,7 +375,7 @@ It should only modify the values of Spacemacs settings."
    ;; If non-nil unicode symbols are displayed in the mode line.
    ;; If you use Emacs as a daemon and wants unicode characters only in GUI set
    ;; the value to quoted `display-graphic-p'. (default t)
-   dotspacemacs-mode-line-unicode-symbols nil
+   dotspacemacs-mode-line-unicode-symbols 'display-graphic-p
 
    ;; If non-nil smooth scrolling (native-scrolling) is enabled. Smooth
    ;; scrolling overrides the default behavior of Emacs which recenters point
@@ -521,22 +518,7 @@ before packages are loaded."
   (ulys/conf/latex)
   (ulys/conf/mail)
   (ulys/conf/dired)
-  (ulys/conf/eaf)
   (ulys/conf/org-noter))
-
-;; EAF config
-(defun ulys/conf/eaf ()
-  (use-package eaf
-    :load-path "~/Comp/emacs-application-framework"
-    :custom
-    (eaf-find-alternate-file-in-dired t)
-    :config
-    (eaf-bind-key scroll_up "RET" eaf-pdf-viewer-keybinding)
-    (eaf-bind-key scroll_down_page "DEL" eaf-pdf-viewer-keybinding)
-    (eaf-bind-key scroll_up "C-n" eaf-pdf-viewer-keybinding)
-    (eaf-bind-key scroll_down "C-p" eaf-pdf-viewer-keybinding)
-    (eaf-bind-key take_photo "p" eaf-camera-keybinding)))
-
 
 ;; dired config (hide .~undo-tree~ files)
 (defun ulys/conf/dired ()
