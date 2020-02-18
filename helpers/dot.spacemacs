@@ -542,6 +542,9 @@ before packages are loaded."
 
 ;; Appearance config (time, fullscreen...)
 (defun ulys/conf/appearance ()
+  ;; Count windows from one inside each frame
+  (setq winum-scope 'frame-local)
+
   ;; add time in powerline
   (display-time-mode 1)
 
