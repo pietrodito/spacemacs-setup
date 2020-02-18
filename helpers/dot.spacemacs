@@ -422,7 +422,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil, start an Emacs server if one is not already running.
    ;; (default nil)
-   dotspacemacs-enable-server t
+   dotspacemacs-enable-server nil
    ;; Set the emacs server socket location.
    ;; If nil, uses whatever the Emacs default is, otherwise a directory path
    ;; like \"~/.emacs.d/server\". It has no effect if
@@ -556,7 +556,8 @@ before packages are loaded."
 ;; Keyboard config
 (defun ulys/conf/kbd ()
 
-  (ulys/config/smartparens)
+  (ulys/conf/smartparens)
+  (ulys/conf/toggle-shell)
 
   ;; Simulates vim increment and decrement number
   (define-key evil-normal-state-map  (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
@@ -567,8 +568,8 @@ before packages are loaded."
 
   (define-key evil-visual-state-map (kbd "M-v") 'ulys/region-to-process)
   (global-set-key (kbd "<f3>") 'ulys/current-line-to-process)
-  (global-set-key (kbd "<f4>") 'ulys/open-shell))
-(defun ulys/config/smartparens ()
+  (global-set-key (kbd "<f4>") 'ulys/toggle-shell))
+(defun ulys/conf/smartparens ()
   (use-package smartparens
     :defer t
     :diminish ""
@@ -628,6 +629,16 @@ process."
     (interactive)
     (spacemacs/default-pop-shell)
     (other-window -1))
+(defun ulys/close-shell ()
+  (kill-buffer "*ansi-term-1*"))
+(defun ulys/conf/toggle-shell ()
+  (setq ulys/toggle-shell-on nil))
+(defun ulys/toggle-shell ()
+  (interactive)
+  (if ulys/toggle-shell-on
+      (ulys/close-shell)
+    (ulys/open-shell))
+  (setq ulys/toggle-shell-on (not ulys/toggle-shell-on)))
 
 ;; Latex config
 (defun ulys/conf/latex ()
