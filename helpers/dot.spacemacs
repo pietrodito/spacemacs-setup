@@ -248,7 +248,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Default font or prioritized list of fonts.
    dotspacemacs-default-font '("Source Code Pro"
-                               :size 14.0
+                               :size 13.0
                                :weight normal
                                :width normal)
 
@@ -375,7 +375,7 @@ It should only modify the values of Spacemacs settings."
    ;; If non-nil unicode symbols are displayed in the mode line.
    ;; If you use Emacs as a daemon and wants unicode characters only in GUI set
    ;; the value to quoted `display-graphic-p'. (default t)
-   dotspacemacs-mode-line-unicode-symbols 'display-graphic-p
+   dotspacemacs-mode-line-unicode-symbols t
 
    ;; If non-nil smooth scrolling (native-scrolling) is enabled. Smooth
    ;; scrolling overrides the default behavior of Emacs which recenters point
@@ -422,7 +422,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil, start an Emacs server if one is not already running.
    ;; (default nil)
-   dotspacemacs-enable-server nil
+   dotspacemacs-enable-server t
    ;; Set the emacs server socket location.
    ;; If nil, uses whatever the Emacs default is, otherwise a directory path
    ;; like \"~/.emacs.d/server\". It has no effect if
@@ -542,6 +542,9 @@ before packages are loaded."
 
 ;; Appearance config (time, fullscreen...)
 (defun ulys/conf/appearance ()
+
+  (spacemacs/toggle-centered-point-globally-on)
+
   ;; Count windows from one inside each frame
   (setq winum-scope 'frame-local)
 
@@ -716,6 +719,7 @@ process."
 
 ;; Org config
 (defun ulys/config/org ()
+  (setq org-hide-emphasis-markers t)
   (ulys/config/org-tempo)
   (ulys/config/org-babel)
   (ulys/config/org-calendar)
@@ -767,6 +771,104 @@ process."
                                       (python     . t)
                                       (sql        . t))))
    '(org-confirm-babel-evaluate nil)))
+(defun ulys/org//capture-helper-capture-with-yank-method (method arg)
+
+  ;; helper 1/2
+  (defun wrap-into-results-example (capture)
+    (concat
+     "#+RESULTS:\n"
+     "#+BEGIN_EXAMPLE\n"
+     capture
+     "\n#+END_EXAMPLE\n"))
+
+  ;; helper 2/2
+  (defun choose-process (arg)
+    (if (or arg ;; user asks for selection
+            (not (boundp 'R-process-target)) ;; target not set
+            ;; or target is not set to an active process:
+            (not (process-live-p (get-buffer-process
+                                  R-process-target))))
+        (setq R-process-target
+              (completing-read
+               "Choose R process: "
+               (seq-map (lambda (el) (buffer-name (process-buffer el)))
+                        (process-list))))))
+
+  ;; main
+  (choose-process arg)
+  (insert (wrap-into-results-example
+           (funcall method R-process-target))))
+(defun ulys/org/tibble-capture (arg)
+  "Let the user choose a R process, then kill last tibble output
+in the process and insert it in current buffer in a org
+#+RESULTS: format."
+  (interactive "P")
+
+  ;; helper 1/2
+  (defun extract-nrows-from-tibble-first-line (line)
+    "Extract the number N in the pattern: # A tibble N x M"
+    (let* (( line-without-commas (replace-regexp-in-string "," "" line))
+           ( x-position    (string-match " x" line-without-commas))
+           ( nrow-start-at (length "# A tibble ")))
+      (string-to-number
+       (substring line-without-commas nrow-start-at x-position))))
+
+  ;; helper 2/2
+  (defun yank-last-tibble-from-buffer (buffer)
+    (interactive)
+
+    (save-current-buffer
+      (set-buffer buffer)
+      (search-backward "tibble")
+      (beginning-of-line)
+      (let* ((tibble-beg (point))
+             (nrow (extract-nrows-from-tibble-first-line (thing-at-point 'line t)))
+             (tibble-end (progn
+                           (message "nrow: %d" nrow)
+                           (re-search-forward (concat "^" (number-to-string (min 10 nrow))))
+                           (while (search-forward "#"  nil t))   ;; t means no error
+                           (end-of-line)
+                           (point))))
+        (buffer-substring tibble-beg tibble-end))))
+
+
+  ;; main
+  (ulys/org//capture-helper-capture-with-yank-method 'yank-last-tibble-from-buffer arg))
+(defun ulys/org/glimpse-capture (arg)
+  "Let the user choose a R process, then kill last glimpse output
+in the process and insert it in current buffer in a org
+#+RESULTS: format."
+  (interactive "P")
+
+  ;; helper 1/2
+  (defun extract-nb-vars-from-glimpse-second-line (line)
+    "Extract the number N in the pattern: Variables: N"
+    (let (( nb-vars-start-at (length "Varialbes: "))
+          ( nb-vars-end-at   (length line)))
+      (string-to-number
+       (substring line nb-vars-start-at nb-vars-end-at))))
+
+  ;; helper 2/2
+  (defun yank-last-glimpse-from-buffer (buffer)
+    (interactive)
+
+    (save-current-buffer
+      (set-buffer buffer)
+      (search-backward "Observations: ")
+      (beginning-of-line)
+      (let* ((glimpse-beg (point))
+             (nrow (progn
+                     (forward-line)
+                     (extract-nb-vars-from-glimpse-second-line
+                      (thing-at-point 'line t))))
+             (glimpse-end (progn
+                           (forward-line nrow)
+                           (end-of-line)
+                           (point))))
+        (buffer-substring glimpse-beg glimpse-end))))
+
+  ;; main
+  (ulys/org//capture-helper-capture-with-yank-method 'yank-last-glimpse-from-buffer arg))
 (defun ulys/config/org-tempo ()
   ;; In org mode : auto complete #+begin #+end
   (require 'org-tempo))
