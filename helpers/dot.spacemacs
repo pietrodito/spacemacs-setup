@@ -1,4 +1,4 @@
-;; -*- mode: emacs-lisp; lexical-binding: t -*-
+;; i-*- mode: emacs-lisp; lexical-binding: t -*-
 ;; This file is loaded by Spacemacs at startup.
 ;; It must be stored in your home directory.
 
@@ -71,8 +71,11 @@ This function should only modify configuration layer settings."
                treemacs-use-filewatch-mode t)
 
      ;; ------- Tools
+     ;; helm
+     (helm :variables
+           helm-position 'bottom
+           helm-no-header t)
      pdf
-     helm
      (shell :variables
             shell-default-term-shell "/bin/zsh"
             shell-default-height 30
@@ -514,7 +517,7 @@ before packages are loaded."
   (ulys/conf/kbd)
   (ulys/config/org)
   (ulys/config/ess)
-  (ulys/conf/appearance)
+  (ulys/conf/general)
   (ulys/conf/latex)
   (ulys/conf/mail)
   (ulys/conf/dired)
@@ -535,14 +538,15 @@ before packages are loaded."
           org-noter-auto-save-last-location t)
 
     (defun org-noter-init-pdf-view ()
+      ;; (run-at-time "0.5 sec" nil #'org-noter)
       (pdf-view-fit-page-to-window)
-      (pdf-view-auto-slice-minor-mode)
-      (run-at-time "0.5 sec" nil #'org-noter))
+      (pdf-view-auto-slice-minor-mode))
     (add-hook 'pdf-view-mode-hook 'org-noter-init-pdf-view)))
 
-;; Appearance config (time, fullscreen...)
-(defun ulys/conf/appearance ()
+;; General config (time, fullscreen...)
+(defun ulys/conf/general ()
 
+  (setq hybrid-style-enable-hjkl-bindings t)
   (spacemacs/toggle-centered-point-globally-on)
 
   ;; Count windows from one inside each frame
@@ -645,16 +649,7 @@ process."
 
 ;; Latex config
 (defun ulys/conf/latex ()
-    ;; org-latex-export-to-pdf : report settings - prevent org first level to be converted as a part
-    (with-eval-after-load 'ox-latex
-    (add-to-list 'org-latex-classes
-                 '("report"
-                   "\\documentclass{report}"
-                   ("\\chapter{%s}" . "\\chapter*{%s}")
-                   ("\\section{%s}" . "\\section*{%s}")
-                   ("\\subsection{%s}" . "\\subsection*{%s}")
-                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
-  )
+  (load-file "/home/ulys/Nextcloud/Computer-Science/Org/org-latex-classes-conf/ulys-org-latex-classes-conf.el"))
 
 ;; Mail setup
 ;; TODO Try harder to make this work see http://cachestocaches.com/series/emacs-productivity/
@@ -695,34 +690,41 @@ process."
 
 ;; ESS config
 (defun ulys/config/ess ()
+  (ulys/conf/ess-devtools-save-silentely)
   (add-hook 'ess-mode-hook
             (lambda ()
               (define-key ess-mode-map (kbd ";") 'ess-insert-assign)
-              (define-key ess-mode-map (kbd "C-;") 'ess-insert-magrittr-pipe)
+              (define-key ess-mode-map (kbd "C-;") 'ulys/conf/ess-insert-magrittr-pipe)
               (define-key ess-mode-map (kbd "C-:")
-                'ess-insert-right-assign-operator)
+                'ulys/conf/ess-insert-right-assign-operator)
               (define-key ess-mode-map (kbd "C-x C-j")
                 'ess-eval-line-invisibly-and-step)
-              (define-key ess-mode-map (kbd "C-`") 'ess-backquote-from-dollar))) )
-(defun ess-insert-magrittr-pipe ()
+              (define-key ess-mode-map (kbd "C-`") 'ulys/conf/ess-backquote-from-dollar))) )
+(defun ulys/conf/ess-insert-magrittr-pipe ()
   "Insert magrittr pipe at i.e. \"%>%\"."
   (interactive)
   (insert "\n  %>% "))
-(defun ess-insert-right-assign-operator ()
+(defun ulys/conf/ess-insert-right-assign-operator ()
   "Insert  \"->\"."
   (interactive)
   (insert " -> "))
-(defun ess-backquote-from-dollar () ;; TODO
+(defun ulys/conf/ess-devtools-save-silentely ()
+  (setq ess-save-silently t))
+(defun ulys/conf/ess-backquote-from-dollar () ;; TODO
   "Surround with backquotes form last $ till point."
   (interactive)
   ())
 
 ;; Org config
 (defun ulys/config/org ()
+  (setq org-src-window-setup 'current-window)
+  (setq org-list-allow-alphabetical t)
   (setq org-hide-emphasis-markers t)
   (ulys/config/org-tempo)
   (ulys/config/org-babel)
   (ulys/config/org-calendar)
+  (ulys/config/org-minted)
+  (ulys/config/org-odt-export-latexml)
   (ulys/config/org-capture)
   (ulys/config/org-file-apps))
 (defun ulys/org-insert-csv-as-table (filename)
@@ -777,9 +779,10 @@ process."
   (defun wrap-into-results-example (capture)
     (concat
      "#+RESULTS:\n"
-     "#+BEGIN_EXAMPLE\n"
+     "#+ATTR_LATEX: :options frame=lines\n"
+     "#+BEGIN_SRC R :eval no :tangle no\n"
      capture
-     "\n#+END_EXAMPLE\n"))
+     "\n#+END_SRC\n"))
 
   ;; helper 2/2
   (defun choose-process (arg)
@@ -804,7 +807,7 @@ in the process and insert it in current buffer in a org
 #+RESULTS: format."
   (interactive "P")
 
-  ;; helper 1/2
+  ;; helper 1/3
   (defun extract-nrows-from-tibble-first-line (line)
     "Extract the number N in the pattern: # A tibble N x M"
     (let* (( line-without-commas (replace-regexp-in-string "," "" line))
@@ -813,7 +816,8 @@ in the process and insert it in current buffer in a org
       (string-to-number
        (substring line-without-commas nrow-start-at x-position))))
 
-  ;; helper 2/2
+
+  ;; helper 3/3
   (defun yank-last-tibble-from-buffer (buffer)
     (interactive)
 
@@ -831,7 +835,6 @@ in the process and insert it in current buffer in a org
                            (point))))
         (buffer-substring tibble-beg tibble-end))))
 
-
   ;; main
   (ulys/org//capture-helper-capture-with-yank-method 'yank-last-tibble-from-buffer arg))
 (defun ulys/org/glimpse-capture (arg)
@@ -840,7 +843,7 @@ in the process and insert it in current buffer in a org
 #+RESULTS: format."
   (interactive "P")
 
-  ;; helper 1/2
+  ;; helper 1
   (defun extract-nb-vars-from-glimpse-second-line (line)
     "Extract the number N in the pattern: Variables: N"
     (let (( nb-vars-start-at (length "Varialbes: "))
@@ -848,7 +851,11 @@ in the process and insert it in current buffer in a org
       (string-to-number
        (substring line nb-vars-start-at nb-vars-end-at))))
 
-  ;; helper 2/2
+  ;; helper 2
+  (defun suppress_$_in_front_of_lines (lines)
+    (replace-regexp-in-string "^\$ "  "" lines))
+
+  ;; helper 3
   (defun yank-last-glimpse-from-buffer (buffer)
     (interactive)
 
@@ -865,13 +872,23 @@ in the process and insert it in current buffer in a org
                            (forward-line nrow)
                            (end-of-line)
                            (point))))
-        (buffer-substring glimpse-beg glimpse-end))))
+        (suppress_$_in_front_of_lines
+         (buffer-substring glimpse-beg glimpse-end) ))))
 
   ;; main
   (ulys/org//capture-helper-capture-with-yank-method 'yank-last-glimpse-from-buffer arg))
 (defun ulys/config/org-tempo ()
   ;; In org mode : auto complete #+begin #+end
   (require 'org-tempo))
+(defun ulys/config/org-minted ()
+  (setq org-latex-listings 'minted
+        org-latex-packages-alist '(("" "minted"))
+        org-latex-pdf-process
+        '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
+(defun ulys/config/org-odt-export-latexml ()
+  (setq org-latex-to-mathml-convert-command"latexmlmath \"%i\" --presentationmathml=%o"))
 
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -888,11 +905,14 @@ This function is called at the very end of Spacemacs initialization."
  ;; If there is more than one, they won't work right.
  '(evil-want-Y-yank-to-eol nil)
  '(evil-want-fine-undo t)
- '(org-agenda-files '("~/Comp/R/ess-tests.org" "~/Comp/Org/draft.org"))
- '(org-babel-load-languages '((emacs-lisp . t) (R . t)))
+ '(org-agenda-files
+   (quote
+    ("~/Nextcloud/These-de-sciences/Biblioraphy/Kaplan-Meyer-1958.org" "~/Comp/R/ess-tests.org" "~/Comp/Org/draft.org")))
+ '(org-babel-load-languages (quote ((emacs-lisp . t) (R . t))))
  '(org-confirm-babel-evaluate nil)
  '(package-selected-packages
-   '(tern nodejs-repl livid-mode skewer-mode js2-refactor multiple-cursors js2-mode js-doc import-js grizzl helm-gtags ggtags dap-mode lsp-treemacs bui counsel-gtags counsel swiper ivy add-node-modules-path xterm-color ws-butler winum which-key web-mode volatile-highlights vi-tilde-fringe uuidgen use-package toc-org tagedit systemd spaceline powerline smeargle slim-mode shell-pop scss-mode sass-mode restart-emacs ranger rainbow-delimiters pug-mode popwin persp-mode pcre2el paradox spinner orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-bullets open-junk-file neotree multi-term move-text mmm-mode markdown-toc markdown-mode magit-gitflow magit-popup macrostep lorem-ipsum linum-relative link-hint indent-guide hydra lv hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit magit transient git-commit with-editor evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu ess-smart-equals ess-R-data-view ctable ess julia-mode eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump f s diminish define-word csv-mode company-web web-completion-data dash company-statistics company-auctex company column-enforce-mode clean-aindent-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol auto-compile packed auctex-latexmk auctex aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup)))
+   (quote
+    (tern nodejs-repl livid-mode skewer-mode js2-refactor multiple-cursors js2-mode js-doc import-js grizzl helm-gtags ggtags dap-mode lsp-treemacs bui counsel-gtags counsel swiper ivy add-node-modules-path xterm-color ws-butler winum which-key web-mode volatile-highlights vi-tilde-fringe uuidgen use-package toc-org tagedit systemd spaceline powerline smeargle slim-mode shell-pop scss-mode sass-mode restart-emacs ranger rainbow-delimiters pug-mode popwin persp-mode pcre2el paradox spinner orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-bullets open-junk-file neotree multi-term move-text mmm-mode markdown-toc markdown-mode magit-gitflow magit-popup macrostep lorem-ipsum linum-relative link-hint indent-guide hydra lv hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit magit transient git-commit with-editor evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu ess-smart-equals ess-R-data-view ctable ess julia-mode eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump f s diminish define-word csv-mode company-web web-completion-data dash company-statistics company-auctex company column-enforce-mode clean-aindent-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol auto-compile packed auctex-latexmk auctex aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
