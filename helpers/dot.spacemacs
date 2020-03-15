@@ -525,8 +525,24 @@ before packages are loaded."
 
 ;; dired config (hide .~undo-tree~ files)
 (defun ulys/conf/dired ()
+  ;; Auto-refresh dired on file change
+  (add-hook 'dired-mode-hook 'auto-revert-mode)
+
+  (spacemacs/set-leader-keys "ad" 'ulys/dired-open-current-dir)
+
   (setq dired-omit-verbose nil)
-  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode))))
+  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
+  (ulys/conf/dired/kbd/C-hjkl))
+(defun ulys/dired-open-current-dir ()
+  (interactive)
+  (spacemacs/dired "."))
+
+
+(defun ulys/conf/dired/kbd/C-hjkl ()
+  (evil-define-key '(normal) dired-mode-map  (kbd "C-h") 'dired-up-directory)
+  (evil-define-key '(normal) dired-mode-map  (kbd "C-j") 'evil-next-line)
+  (evil-define-key '(normal) dired-mode-map  (kbd "C-k") 'evil-previous-line)
+  (evil-define-key '(normal) dired-mode-map  (kbd "C-l") 'dired-find-alternate-file))
 
 ;; org-noter config
 (defun ulys/conf/org-noter ()
@@ -562,9 +578,9 @@ before packages are loaded."
 
 ;; Keyboard config
 (defun ulys/conf/kbd ()
-
   (ulys/conf/smartparens)
   (ulys/conf/toggle-shell)
+
 
   ;; Simulates vim increment and decrement number
   (define-key evil-normal-state-map  (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
@@ -575,7 +591,9 @@ before packages are loaded."
 
   (define-key evil-visual-state-map (kbd "M-v") 'ulys/region-to-process)
   (global-set-key (kbd "<f3>") 'ulys/current-line-to-process)
-  (global-set-key (kbd "<f4>") 'ulys/toggle-shell))
+  (global-set-key (kbd "<f4>") 'ulys/toggle-shell)
+  (global-set-key (kbd "S-<f4>") 'ulys/force-toggle-shell)
+  )
 (defun ulys/conf/smartparens ()
   (use-package smartparens
     :defer t
@@ -632,20 +650,31 @@ process."
               (concat line-at-point "\n")))
     (process-send-string region-to-process-target string-to-send)
     (evil-next-line))
-(defun ulys/open-shell ()
+(defun ulys/open-ansi-term ()
+  (interactive)
+  (spacemacs/default-pop-shell)
+  (setq region-to-process-target (current-buffer)))
+(defun ulys/open-ansi-term-and-back ()
     (interactive)
-    (spacemacs/default-pop-shell)
+    (ulys/open-ansi-term)
     (other-window -1))
 (defun ulys/close-shell ()
-  (kill-buffer "*ansi-term-1*"))
+  (setq kill-buffer-query-functions (delq 'process-kill-buffer-query-function kill-buffer-query-functions))
+  (kill-buffer region-to-process-target)
+  (add-to-list 'kill-buffer-query-functions 'process-kill-buffer-query-function)
+  )
 (defun ulys/conf/toggle-shell ()
   (setq ulys/toggle-shell-on nil))
 (defun ulys/toggle-shell ()
   (interactive)
   (if ulys/toggle-shell-on
       (ulys/close-shell)
-    (ulys/open-shell))
+    (ulys/open-ansi-term-and-back))
   (setq ulys/toggle-shell-on (not ulys/toggle-shell-on)))
+(defun ulys/force-toggle-shell ()
+  (interactive)
+  (setq ulys/toggle-shell-on t)
+  (ulys/open-ansi-term))
 
 ;; Latex config
 (defun ulys/conf/latex ()
@@ -683,8 +712,6 @@ process."
   (setq nnml-directory "~/gmail")
   (setq message-directory "~/gmail")
 
-  ;; Auto-refresh dired on file change
-  (add-hook 'dired-mode-hook 'auto-revert-mode)
 
   )
 
