@@ -425,7 +425,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil, start an Emacs server if one is not already running.
    ;; (default nil)
-   dotspacemacs-enable-server t
+   dotspacemacs-enable-server nil
    ;; Set the emacs server socket location.
    ;; If nil, uses whatever the Emacs default is, otherwise a directory path
    ;; like \"~/.emacs.d/server\". It has no effect if
@@ -566,14 +566,13 @@ before packages are loaded."
   (spacemacs/toggle-centered-point-globally-on)
 
   ;; Count windows from one inside each frame
-  (setq winum-scope 'frame-local)
+  ;; (setq winum-scope 'frame-local)
 
   ;; add time in powerline
   (display-time-mode 1)
 
   ;; New frame will open fullscreen
   (add-to-list 'default-frame-alist '(fullscreen . fullboth))
-  (spacemacs/toggle-fullscreen-frame)
   )
 
 ;; Keyboard config
@@ -581,6 +580,8 @@ before packages are loaded."
   (ulys/conf/smartparens)
   (ulys/conf/toggle-shell)
 
+  ;; C-h to delete buffer and C-S-h for help
+  (global-set-key (kbd "C-h") 'spacemacs/kill-this-buffer)
 
   ;; Simulates vim increment and decrement number
   (define-key evil-normal-state-map  (kbd "C-a C-a") 'evil-numbers/inc-at-pt)
@@ -740,7 +741,11 @@ process."
 (defun ulys/conf/ess-backquote-from-dollar () ;; TODO
   "Surround with backquotes form last $ till point."
   (interactive)
-  ())
+  (insert "`")
+  (setq initial-position (point))
+  (evil-find-char-to-backward 1 (string-to-char "$"))
+  (insert "`")
+  (goto-char (+ 1 initial-position)))
 
 ;; Org config
 (defun ulys/config/org ()
