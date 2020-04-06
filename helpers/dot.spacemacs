@@ -285,7 +285,7 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-distinguish-gui-tab t
 
    ;; Name of the default layout (default "Default")
-   dotspacemacs-default-layout-name "Default"
+   dotspacemacs-default-layout-name "TODO"
 
    ;; If non-nil the default layout name is displayed in the mode-line.
    ;; (default nil)
@@ -562,7 +562,7 @@ before packages are loaded."
 (defun ulys/conf/general ()
 
   (setq hybrid-style-enable-hjkl-bindings t)
-  ;; (spacemacs/toggle-centered-point-globally-on)
+  (spacemacs/toggle-centered-point-globally-on)
 
   ;; Count windows from one inside each frame
   ;; (setq winum-scope 'frame-local)
@@ -726,7 +726,9 @@ process."
                 'ulys/conf/ess-insert-right-assign-operator)
               (define-key ess-mode-map (kbd "C-x C-j")
                 'ess-eval-line-invisibly-and-step)
-              (define-key ess-mode-map (kbd "C-`") 'ulys/conf/ess-backquote-from-dollar))) )
+              (define-key ess-mode-map (kbd "C-`") 'ulys/conf/ess-backquote-from-dollar)
+              (define-key ess-mode-map (kbd "C-~") 'ulys/conf/ess-backquote-delete-df$)
+              )))
 (defun ulys/conf/ess-insert-magrittr-pipe ()
   "Insert magrittr pipe at i.e. \"%>%\"."
   (interactive)
@@ -737,7 +739,7 @@ process."
   (insert " -> "))
 (defun ulys/conf/ess-devtools-save-silentely ()
   (setq ess-save-silently t))
-(defun ulys/conf/ess-backquote-from-dollar () ;; TODO
+(defun ulys/conf/ess-backquote-from-dollar ()
   "Surround with backquotes form last $ till point."
   (interactive)
   (insert "`")
@@ -745,6 +747,16 @@ process."
   (evil-find-char-to-backward 1 (string-to-char "$"))
   (insert "`")
   (goto-char (+ 1 initial-position)))
+(defun ulys/conf/ess-backquote-delete-df$ ()
+  (interactive)
+  (ulys/conf/ess-backquote-from-dollar)
+  (evil-find-char-to-backward 1 (string-to-char "$"))
+  (setq dollar-position (point))
+  (evil-backward-WORD-begin)
+  (evil-sp-delete (point) dollar-position)
+  (evil-find-char 1 (string-to-char "`"))
+  (evil-forward-char)
+  )
 
 ;; Org config
 (defun ulys/config/org ()
