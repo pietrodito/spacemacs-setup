@@ -3,3 +3,5 @@ sudo apt install -y texlive-full
 
 sudo apt install python-pip
 pip install Pygments
+
+sudo apt install -y inkscape

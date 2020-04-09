@@ -517,7 +517,6 @@ before packages are loaded."
   (ulys/config/org)
   (ulys/config/ess)
   (ulys/conf/general)
-  (ulys/conf/latex)
   (ulys/conf/mail)
   (ulys/conf/dired)
   (ulys/conf/org-noter))
@@ -676,10 +675,6 @@ process."
   (setq ulys/toggle-shell-on t)
   (ulys/open-ansi-term))
 
-;; Latex config
-(defun ulys/conf/latex ()
-  (load-file "/home/ulys/Nextcloud/Computer-Science/Org/org-latex-classes-conf/ulys-org-latex-classes-conf.el"))
-
 ;; Mail setup
 ;; TODO Try harder to make this work see http://cachestocaches.com/series/emacs-productivity/
 (defun ulys/conf/mail ()
@@ -813,6 +808,7 @@ process."
                                       (R          . t)
                                       (latex      . t)
                                       (shell      . t)
+                                      (ditaa      . t)
                                       (python     . t)
                                       (sql        . t))))
    '(org-confirm-babel-evaluate nil)))
