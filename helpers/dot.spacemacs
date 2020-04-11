@@ -250,7 +250,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Default font or prioritized list of fonts.
    dotspacemacs-default-font '("Source Code Pro"
-                               :size 13.0
+                               :size 11.0
                                :weight normal
                                :width normal)
 
@@ -513,13 +513,19 @@ before packages are loaded."
   (setq undo-tree-auto-save-history t)
   (setq vc-follow-symlinks t) ;; To edit .spacemacs without to be prompted each time
   (setq paradox-github-token "f3b34c73d58490f6a8dae190a8e3797b6546dd4a")
-  (ulys/conf/kbd)
-  (ulys/config/org)
-  (ulys/config/ess)
   (ulys/conf/general)
-  (ulys/conf/mail)
+  (ulys/conf/kbd)
   (ulys/conf/dired)
-  (ulys/conf/org-noter))
+  (ulys/config/org)
+  (ulys/conf/org-noter)
+  (ulys/conf/doc-view)
+  (ulys/config/ess)
+  (ulys/conf/mail)
+  )
+
+
+;; doc-view config
+(defun ulys/conf/doc-view ())
 
 ;; dired config (hide .~undo-tree~ files)
 (defun ulys/conf/dired ()
